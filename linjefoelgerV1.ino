@@ -11,7 +11,7 @@ int sidste_maaling[5] = {0, 0, 0, 0, 0};
 int sidste_sorte_maaling[5] = {0, 0, 0, 0, 0};
 bool mellem_punkterne;
 int sensor_antal = 4; //0-indekseret, så der er 5
-int senarie_vaerdi;
+int scenarie_vaerdi;
 int retning_vaerdi;
 //bool frem_eller_bak; kan evt. bruges i senarie 5, hvis vi vil det
 
@@ -42,23 +42,23 @@ void loop ()
 
   if (mellem_punkterne == false)
   {
-    senarie_vaerdi = senarieinator(sidste_maaling);
+    scenarie_vaerdi = scenarieinator(sidste_maaling);
     retning_vaerdi = retningsinator(sidste_maaling);
   }
   else if (mellem_punkterne == true)
   {
-    senarie_vaerdi = senarieinator(sidste_sorte_maaling);
+    scenarie_vaerdi = scenarieinator(sidste_sorte_maaling);
     retning_vaerdi = retningsinator(sidste_sorte_maaling);
   };
 
-  if (senarie_vaerdi == 0) //er det senarie 1?
+  if (scenarie_vaerdi == 0) //er det scenarie 1?
   {
     motor_ligeud(0);
   }
-  else if (senarie_vaerdi != 0) //andre senarier
+  else if (scenarie_vaerdi != 0) //andre scenarier
   {
-    motor_styring(motor_1, retning_vaerdi, senarie_vaerdi);
-    motor_styring(motor_2, retning_vaerdi, senarie_vaerdi);
+    motor_styring(motor_1, retning_vaerdi, scenarie_vaerdi);
+    motor_styring(motor_2, retning_vaerdi, scenarie_vaerdi);
   };
 };
 
@@ -75,27 +75,27 @@ void input_omsaetter( )
  };
 };
 
-int senarieinator(int maaling[]) //enten sidste sorte måling eller sindste måling
+int scenarieinator(int maaling[]) //enten sidste sorte måling eller sindste måling
 {
   if (maaling[0] == 1 && maaling[1] == 0 && maaling[2] == 0 && maaling[3] == 0 && maaling[4] == 0)
   {
-    return(0); //Senarie 1
+    return(0); //Scenarie 1
   }
   else if (maaling[0] == 1 && (maaling[1] == 1 || maaling[2] == 1) && maaling[3] == 0 && maaling[4] == 0)
   {
-    return(1);//Senarie 2
+    return(1); //Scenarie 2
   }
   else if (maaling[0] == 0 && (maaling[1] == 1 || maaling[2] == 1) && maaling[3] == 0 && maaling[4] == 0)
   {
-    return(2);//Senarie 3
+    return(2); //Scenarie 3
   }
   else if (maaling[0] == 0 && ((maaling[1] == 1 && maaling[3] == 1) || (maaling[2] == 1 && maaling[4] == 1)))
   {
-    return(3);
+    return(3); //Scenarie 4
   }
   else if (maaling[0] == 1 && maaling[1] == 0 && maaling[2] == 0 && (maaling[3] == 1 || maaling[4] == 1))
   {
-    return(4);
+    return(4); //Scenarie
   };
 };
 
@@ -111,11 +111,11 @@ int retningsinator(int maaling[])
   };
 };
 
-void motor_ligeud(int senarie)
+void motor_ligeud(int scenarie)
 //senarie er altid 1
 {
-  int power_1 = motor_1[senarie][0];
-  int power_2 = motor_2[senarie][0];
+  int power_1 = motor_1[scenarie][0];
+  int power_2 = motor_2[scenarie][0];
 
   //motor 1
   digitalWrite(motor_1[5][0],HIGH);
@@ -125,10 +125,10 @@ void motor_ligeud(int senarie)
   analogWrite(motor_2[5][1], power_2);
 };
 
-void motor_styring(int motor_ID[6][2], int retning, int senarie)
+void motor_styring(int motor_ID[6][2], int retning, int scenarie)
 //senarierne skal være 0-indekseret
 {
-  int power = motor_ID[senarie][retning];
+  int power = motor_ID[scenarie][retning];
 
   digitalWrite(motor_ID[5][0],HIGH);
   analogWrite(motor_ID[5][1], power);   //PWM Speed Control
