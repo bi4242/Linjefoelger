@@ -18,6 +18,7 @@ int retning_vaerdi;
 
 void setup ()
 {
+  Serial.begin(9600); //til debugging
   //Databehandling - sensor pin input
   pinMode(A0, INPUT); //forreste pin
   pinMode(A1, INPUT); //1. orden venstre
@@ -36,8 +37,10 @@ void setup ()
     delay(500);
     t++;
   };
+  Serial.println("Kalibrering af graa paabegyndt...");
   digitalWrite(LED_BUILTIN, HIGH);
   calibrering(calibrering_graa[5]);
+  Serial.println("Kalibrering af graa done");
   while(t<30)
   {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -46,9 +49,11 @@ void setup ()
     delay(500);
     t++;
   };
+  Serial.println("Kalibrering af sort paabegyndt...");
   digitalWrite(LED_BUILTIN, HIGH);
   calibrering(calibrering_sort[5]);
   digitalWrite(LED_BUILTIN, LOW);
+  Serial.println("Kalibrering af sort done");
 
   //find cutoff
   for(int i = 0; i<5; i++)
@@ -71,7 +76,9 @@ void loop ()
       break;
     };
   };
-
+  Serial.print("Mellem punkterne: ");
+  Serial.println(mellem_punkterne);
+  
   if (mellem_punkterne == false)
   {
     scenarie_vaerdi = scenarieinator(sidste_maaling);
@@ -82,7 +89,12 @@ void loop ()
     scenarie_vaerdi = scenarieinator(sidste_sorte_maaling);
     retning_vaerdi = retningsinator(sidste_sorte_maaling);
   };
+  Serial.print("Scenarie: ");
+  Serial.println(scenarie_vaerdi);
 
+  Serial.print("Retning: ");
+  Serial.println(retning_vaerdi);
+  
   if (scenarie_vaerdi == 0) //er det scenarie 1?
   {
     motor_ligeud(0);
@@ -188,7 +200,8 @@ void calibrering(int array[])
     for(int j = 0; j<50; j++)
     {
       sum += calibrering_maalinger[i][j];
-    }
+    };
     array[i] = sum/50;
-  } 
+    Serial.println(array[i]);
+  };
 };
