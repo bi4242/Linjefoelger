@@ -95,7 +95,7 @@ int scenarieinator(int maaling[]) //enten sidste sorte måling eller sindste må
   }
   else if (maaling[0] == 1 && maaling[1] == 0 && maaling[2] == 0 && (maaling[3] == 1 || maaling[4] == 1))
   {
-    return(4); //Scenarie
+    return(4); //Scenarie 5
   };
 };
 
