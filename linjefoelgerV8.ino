@@ -1,13 +1,13 @@
 //Motor ID
-/*int motor_1[6][2] = {{S1, 0}, {S2L, S2R}, {S3L, S3R}, {S4L, S4R}, {S5L, S5R}, {M, E}};
-int motor_2[6][2] = {{S1, 0}, {S2L, S2R}, {S3L, S3R}, {S4L, S4R}, {S5L, S5R}, {M, E}};*/
+/*int motor_1[6][2] = {{S1, 0}, {S2L, S2R}, {S3L, S3R}, {S4L, S4R}, {S5L, S5R}, {M, E, LOW/HIGH for fremad}};
+int motor_2[6][2] = {{S1, 0}, {S2L, S2R}, {S3L, S3R}, {S4L, S4R}, {S5L, S5R}, {M, E, LOW/HIGH for fremad}};*/
 #define INGEN_MOTOR false
 #define ANTAL_SCENARIER 8
 
-int motor_1[ANTAL_SCENARIER + 1][2]            = {{235, 0}, {235, 235}, {235, 150}, {150, 100}, {150, 100}, {200, 100}, {150, 100}, {0, 0}, {2, 5}};
-int motor_2[ANTAL_SCENARIER + 1][2]            = {{235, 0}, {235, 235}, {150, 235}, {100, 150}, {100, 150}, {100, 200}, {100, 150}, {0, 0}, {3, 6}};
-int motor_1_ingen_sort[ANTAL_SCENARIER + 1][2] = {{235, 0}, {150, 100}, {150, 100}, {150, 100}, {150, 100}, {200, 100}, {150, 100}, {0, 0}, {2, 5}};
-int motor_2_ingen_sort[ANTAL_SCENARIER + 1][2] = {{235, 0}, {100, 150}, {100, 150}, {100, 150}, {100, 150}, {100, 200}, {100, 150}, {0, 0}, {3, 6}};
+int motor_1[ANTAL_SCENARIER + 1][3]            = {{235, 0}, {235, 200}, {235, 200}, {150, 100}, {150, 0}, {200, 100}, {150, 100}, {0, 0}, {2, 5, LOW}};
+int motor_2[ANTAL_SCENARIER + 1][3]            = {{235, 0}, {200, 235}, {200, 235}, {100, 150}, {0, 150}, {100, 200}, {100, 150}, {0, 0}, {3, 6, HIGH}};
+int motor_1_ingen_sort[ANTAL_SCENARIER + 1][3] = {{235, 0}, {150, 100}, {150, 100}, {150, 100}, {150, 100}, {200, 100}, {150, 100}, {0, 0}, {2, 5, LOW}};
+int motor_2_ingen_sort[ANTAL_SCENARIER + 1][3] = {{235, 0}, {100, 150}, {100, 150}, {100, 150}, {100, 150}, {100, 200}, {100, 150}, {0, 0}, {3, 6, HIGH}};
 int cutoff[5];
 int kalibrering_graa[5];
 int kalibrering_sort[5];
@@ -92,7 +92,7 @@ void setup (){
 
     for(int i = 0; i<5; i++)
     {
-        cutoff[i] = (kalibrering_sort[i]+kalibrering_graa[i])/2;
+        cutoff[i] = (kalibrering_sort[i]+kalibrering_graa[i])/2-(kalibrering_graa[i]-kalibrering_sort[i])/4;
         Serial.print(cutoff[i]);
         Serial.print(", ");
     }
@@ -237,10 +237,15 @@ void udfoer_scenarie(){
 //     analogWrite(motor_2[5][1], power_2);
 //};
 
-void motor_styring(int motor[ANTAL_SCENARIER + 1][2], int retning, SCENARIE scenarie){
+void motor_styring(int motor[ANTAL_SCENARIER + 1][3], int retning, SCENARIE scenarie){
     int power = motor[scenarie][retning];
     if (INGEN_MOTOR) { return; }
-    digitalWrite(motor[ANTAL_SCENARIER][0],HIGH); // Giver lowkey ikke mening at gøre dette hver gang.
+    int frem_bak = motor[ANTAL_SCENARIER][2];
+    if (power < 0) {
+        frem_bak = !frem_bak;
+        power = -power;
+    }
+    digitalWrite(motor[ANTAL_SCENARIER][0],frem_bak);
     analogWrite(motor[ANTAL_SCENARIER][1], power);
    //PWM Speed Control
 };
