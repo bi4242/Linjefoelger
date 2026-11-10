@@ -2,11 +2,9 @@
 // Samme kalibrering som før: først sort, så grå (= den hvide baggrund), 20 målinger pr. sensor.
 
 #define INGEN_MOTOR false      // true = motorerne står stille (til test af sensorer)
-#define DEBUG true             // true = print til Serial (115200 baud). Sæt til false når den skal køre for alvor
-#define DEBUG_PLOT true        // true = print kun de 5 rå værdier som A0:..,A1:.. (til Serial Plotter), false = tekstlinje til Serial Monitor
-#define TEST_MOTORER false     // true = kør en motortest i setup før kalibreringen (hjulene SKAL være i luften)
+#define DEBUG false            // true = print til Serial (115200 baud). Sæt til false når den skal køre for alvor
+#define DEBUG_PLOT false       // true = print kun de 5 rå værdier som A0:..,A1:.. (til Serial Plotter), false = tekstlinje til Serial Monitor
 #define SOEG_BRUG_FORTEGN false // false = søgedrejet som i versionen der klarede en hel runde. true = søgedrejet bruger STYR_FORTEGN som styringen
-#define SOEG_SVEJ false        // false = drejer bare ved, til linjen er fundet. true = søgningen svinger frem og tilbage (se SOEG_SVEJ_MS)
 #define STYR_FORTEGN -1         // sæt til -1, hvis robotten drejer VÆK fra linjen
 
 // ---------- Tuning ----------
@@ -14,10 +12,9 @@
 #define BASE_FART 150          // grundfart på lige stykker (0-255, regnes om til PWM i motor_styring)
 #define MIN_FART 60            // laveste grundfart i skarpe sving
 #define SOEG_FART 140          // fart når linjen er mistet
-#define SOEG_SVEJ_MS 600       // tid (ms) til ca. 120 grader drejning på stedet; søgningen svinger højst så langt fra hvor linjen blev mistet
 #define HVID_TID_MS 30         // så længe må alt være hvidt, før linjen regnes for mistet
-#define SORT_MIN_SUM 0.5       // samlet sorthed der skal til, før vi tror vi ser linjen (0,5 = én sensor ved din gamle cutoff)
-#define SORTHED_STOEJ 0.5      // mørkhed (0 = baggrund, 1 = sort) under dette tæller som 0, så de grå felter ikke tæller som linje
+#define SORT_MIN_SUM 0.5       // samlet sorthed der skal til, før vi tror vi ser linjen
+#define SORTHED_STOEJ 0.5    // mørkhed (0 = baggrund, 1 =  sort) under dette tæller som 0, så de grå felter ikke tæller som linje
 #define DOEDZONE 8             // fartkommandoer under dette giver 0 PWM
 #define KICK_MS 40             // startpuls når et hjul går fra stilstand til kørsel
 float KP = 2.5;                // fartændring pr. mm fejl
@@ -76,9 +73,6 @@ void setup (){
         pinMode(motor_pin[i][0], OUTPUT);
         pinMode(motor_pin[i][1], OUTPUT);
     }
-#if TEST_MOTORER
-    motortest();
-#endif
     //kalibrering
     pinMode(LED_BUILTIN, OUTPUT);
     int t = 0;
@@ -154,17 +148,6 @@ void loop (){
             soeg_start = millis();
         }
         int side = sidste_side;
-#if SOEG_SVEJ
-        if (har_set_linje) {
-            // Først mod den side linjen sidst sås på, så frem og tilbage, så robotten ikke drejer helt rundt.
-            // Første sving er SOEG_SVEJ_MS, derefter 2*SOEG_SVEJ_MS.
-            unsigned long t = millis() - soeg_start;
-            if (t >= SOEG_SVEJ_MS) {
-                unsigned long fase = (t - SOEG_SVEJ_MS) / (2UL * SOEG_SVEJ_MS);
-                if (fase % 2 == 0) { side = -side; }
-            }
-        }
-#endif
 #if SOEG_BRUG_FORTEGN
         bool soeg_gren = (STYR_FORTEGN * side > 0);
 #else
@@ -195,6 +178,10 @@ void loop (){
             Serial.print(raa_maaling[i]);
             Serial.print(i < 4 ? "," : "");
         }
+        Serial.print(" fartH=");
+        Serial.print(fart_h);
+        Serial.print(" fartV=");
+        Serial.print(fart_v);
         Serial.println();
 #else
         for (int i = 0; i < 5; i++) {   // rå værdier i rækkefølgen A0 A1 A2 A3 A4
@@ -218,34 +205,6 @@ void loop (){
 #endif
     }
 #endif
-}
-
-// Hvert hjul skal dreje fremad = mod sensorsiden. Rettes ved at bytte LOW/HIGH i motor_pin (3. værdi).
-void motortest(){
-    Serial.println("Hoejre hjul frem (motor_1)");
-    motor_styring(0, 150);
-    delay(1500);
-    motor_styring(0, 0);
-    delay(500);
-    Serial.println("Venstre hjul frem (motor_2)");
-    motor_styring(1, 150);
-    delay(1500);
-    motor_styring(1, 0);
-    delay(500);
-    Serial.println("Begge frem");
-    motor_styring(0, 150);
-    motor_styring(1, 150);
-    delay(1500);
-    motor_styring(0, 0);
-    motor_styring(1, 0);
-    delay(500);
-    Serial.println("Drej paa stedet mod hoejre (venstre frem, hoejre bagud)");
-    motor_styring(1, 150);
-    motor_styring(0, -150);
-    delay(1500);
-    motor_styring(0, 0);
-    motor_styring(1, 0);
-    delay(1000);
 }
 
 void laes_sensorer(){
